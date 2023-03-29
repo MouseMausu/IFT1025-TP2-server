@@ -3,7 +3,6 @@ package server;
 import javafx.util.Pair;
 import server.models.Course;
 import server.models.RegistrationForm;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,7 +11,13 @@ import java.util.Arrays;
 
 public class Server {
 
+    /**
+     * Commande d'inscription.
+     */
     public final static String REGISTER_COMMAND = "INSCRIRE";
+    /**
+     * Commande de chargement.
+     */
     public final static String LOAD_COMMAND = "CHARGER";
     private final ServerSocket server;
     private Socket client;
@@ -21,10 +26,11 @@ public class Server {
     private final ArrayList<EventHandler> handlers;
 
     /**
-     * Construction du squelette du serveur i.e initialisation de son socket, d'une trace des gestionnaires d'événements
-     * et ajout d'un premier gestionnaire correspondant aux requêtes d'un client quelconque (l'événement).
-     * @param port (port du serveur)
-     * @throws IOException
+     * Construction du squelette du serveur i.e initialisation de son socket, d'une référence de gestionnaires d'événements
+     * et ajout d'un premier gestionnaire pouvant traiter chaque requête d'un client (événement).
+     * @param port Port du serveur.
+     * @throws IOException Traitement d'erreur en lien avec le socket du serveur, soit les exceptions en lien avec
+     * l'entrée et la sortie d'un client dans le serveur.
      */
     public Server(int port) throws IOException {
         this.server = new ServerSocket(port, 1);
@@ -33,19 +39,19 @@ public class Server {
     }
 
     /**
-     * Ajout d'un gestionnaire d'événements à notre trace. Agit en tant que référence pour aider le serveur dans le
-     * processus du choix traitement.
-     * @param h (gestionnaire)
+     * Ajoute, à notre référence, un gestionnaire d'événements spécifiques. Celle-ci aide le serveur
+     * à mieux procéder les requêtes en ayant une diversité de gestionnaires d'événement.
+     * @param h Gestionnaire spécifique
      */
     public void addEventHandler(EventHandler h) {
         this.handlers.add(h);
     }
 
     /**
-     * Méthode utilisant une référence qui permet l'automatisation du choix de traitement à effectuer
+     * Méthode utilisant une référence (tableau dynamique) qui permet l'automatisation du choix de traitement à effectuer
      * selon la requête du client.
-     * @param cmd (commande)
-     * @param arg (argument)
+     * @param cmd Commande et donc la requête du client
+     * @param arg Argument/Précision.
      */
     private void alertHandlers(String cmd, String arg) {
         for (EventHandler h : this.handlers) {
@@ -54,9 +60,9 @@ public class Server {
     }
 
     /**
-     * Lancement du serveur i.e accepter et confirmer la connection du client au serveur lorsque ceci a lieu.
-     * Assurer que ses requêtes soient bien reçues et traitées par le serveur (sinon exception). Le serveur atteint
-     * son terminus suite à l'envoie de sa réponse au client, basée sur sa requête.
+     * Lancement du serveur i.e accepter et confirmer la connection du client au serveur.
+     * Assure que le serveur aurait la possibilité de recevoir une requête et par la suite envoyer une réponse au client.
+     * Le serveur atteint son terminus suite à l'envoie de sa réponse au client, basée sur sa requête.
      */
     public void run() {
         while (true) {
@@ -75,9 +81,11 @@ public class Server {
     }
 
     /**
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * Écoute la requête envoyée par le client et par la suite décortique celle-ci de sorte que le serveur puisse
+     * passer à l'automatisation du type de gestionnaire.
+     * @throws IOException Traitement d'erreur sur l'absence d'une requête.
+     * @throws ClassNotFoundException Traitement d'erreur sur la possibilité au SERVEUR de lire de la requête du client.
+     * Le serveur connait-il la classe de la requête ?
      */
     public void listen() throws IOException, ClassNotFoundException {
         String line;
@@ -90,11 +98,10 @@ public class Server {
     }
 
     /**
-     * Déconstruit la chaine de caractère générée par les requêtes du client, afin d'en faire ressortir les mots clés
-     * utile au protocole du traitement de tout événement. C'est ce qui permet de traduire les requêtes du client
-     * au serveur.
-     * @param line (chaine de caractère générée par les requêtes du client)
-     * @return (chaine traduite en mots clés conformes au protocole)
+     * Déconstruit la chaine de caractère décrivant la requête du client, afin d'en faire ressortir les mots clés
+     * utile au protocole de gestionnaire d'événement.
+     * @param line Requête du client sous forme de chaine de caractère
+     * @return Mots clés conformes au protocole
      */
     public Pair<String, String> processCommandLine(String line) {
         String[] parts = line.split(" ");
@@ -104,9 +111,9 @@ public class Server {
     }
 
     /**
-     * Terminus et donc fin du traitement. Fermeture des portes entrées/sorties signifiant
-     * la déconnection du client au serveur.
-     * @throws IOException
+     * Terminus, donc fin du traitement et déconnection du client au serveur.
+     * @throws IOException Traitement d'erreur au cas où le serveur ferme ses entrées et sorties non vides (aucun flush).
+     * Même traitement avec le client (fermeture d'une connection perdue).
      */
     public void disconnect() throws IOException {
         objectOutputStream.close();
@@ -115,10 +122,10 @@ public class Server {
     }
 
     /**
-     * Traitement de l'événement et donc de la requête du client, soit l'inscription ou le chargement des cours
-     * qui sont disponibles durant la session précisée dans l'argument.
-     * @param cmd (inscription/chargement)
-     * @param arg (session en disponibilité, soit celle d'automne, d'été ou d'hiver)
+     * Centre de traitement pour une requête d'inscription ou de chargement de cours disponibles durant la session
+     * précisée en argument.
+     * @param cmd Inscription/chargement
+     * @param arg Session en disponibilité, soit celle d'automne, d'été ou d'hiver
      */
     public void handleEvents(String cmd, String arg) {
         if (cmd.equals(REGISTER_COMMAND)) {
@@ -137,21 +144,23 @@ public class Server {
      */
     public void handleLoadCourses(String arg) {
         try {
-            FileReader fileReader = new FileReader(new File("").getAbsolutePath() + "/src/main/java/server/data/cours.txt");
+            FileReader fileReader = new FileReader( "src/main/java/server/data/cours.txt");
             BufferedReader reader = new BufferedReader(fileReader);
 
-            String infoCours;
+            String stringInfoCours;
             ArrayList<Course> listeCours = new ArrayList<>();
-            while ((infoCours = reader.readLine()) != null) {
-                String[] infoCoursSep = infoCours.split("\t");
-                if (infoCours.contains(arg)) {
-                    listeCours.add(new Course(infoCoursSep[1], infoCoursSep[0], infoCoursSep[2]));
+
+            while ((stringInfoCours = reader.readLine()) != null) {
+                if (stringInfoCours.contains(arg)) {
+                    String[] infoCours = stringInfoCours.split("\t");
+                    listeCours.add(new Course(infoCours[1], infoCours[0], infoCours[2]));
                 }
             }
             reader.close();
             objectOutputStream.writeObject(listeCours);
+            objectOutputStream.flush();
 
-        }catch (IOException e){
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
@@ -165,17 +174,28 @@ public class Server {
         try {
             RegistrationForm ficheIns = (RegistrationForm) objectInputStream.readObject();
 
-            FileWriter fileWriter = new FileWriter(new File("").getAbsolutePath() + "/src/main/java/server/data/inscription.txt");
+            FileReader fileReader = new FileReader("src/main/java/server/data/inscription.txt");
+            BufferedReader reader = new BufferedReader(fileReader);
+
+            String sauvegardeDonneeIns = "";
+            String lecture;
+            while ((lecture = reader.readLine()) != null) {
+                sauvegardeDonneeIns += lecture + "\n";
+            }
+            reader.close();
+
+            FileWriter fileWriter = new FileWriter("src/main/java/server/data/inscription.txt");
             BufferedWriter writer = new BufferedWriter(fileWriter);
 
-            writer.append(ficheIns.getCourse().getSession() + ficheIns.getCourse().getCode() + ficheIns.getMatricule()
-                    + ficheIns.getPrenom() + ficheIns.getNom() + ficheIns.getEmail());
+            writer.append(sauvegardeDonneeIns + ficheIns.getCourse().getSession() + "\t" + ficheIns.getCourse().getCode() + "\t" + ficheIns.getMatricule() + "\t"
+                    + ficheIns.getPrenom() + "\t" + ficheIns.getNom() + "\t" + ficheIns.getEmail() + "\n");
 
             writer.flush();
             writer.close();
 
         } catch (IOException e) {
             e.printStackTrace();
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
