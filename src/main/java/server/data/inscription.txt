@@ -1,1 +1,3 @@
 Automne	IFT1015	20217164	Kenny	Huynh	kenny.huynh@umontreal.ca
+Ete	IFT2256	20217164	Kenny2	Huynh2	kenny.huynh2@umontreal.ca
+Hiver	IFT1025	20217164	Kenny	Huynh	kenny.huynh@umontreal.ca

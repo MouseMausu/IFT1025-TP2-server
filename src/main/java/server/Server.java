@@ -161,7 +161,7 @@ public class Server {
             objectOutputStream.flush();
 
         } catch (IOException e){
-            e.printStackTrace();
+            System.out.println("Fichier cours.txt introuvable!");;
         }
     }
 
@@ -194,11 +194,10 @@ public class Server {
             writer.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Fichier inscription.txt introuvable !");
 
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("Information étudiante illisible");
         }
     }
 }
-
